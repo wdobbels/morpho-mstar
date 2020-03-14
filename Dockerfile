@@ -1,7 +1,7 @@
 # Run by binding the project directory to /morphoml
 # docker build .
 # docker run -it --name morphoml -v "$(pwd)":/morphoml
-FROM tensorflow:latest-gpu-jupyter
+FROM tensorflow/tensorflow:latest-gpu-jupyter
 # Install more needed stuff here if needed
 EXPOSE 8989
 WORKDIR /morphoml
