@@ -4,7 +4,7 @@
 # lack necessary privileges. However, running as root is not recommended by
 # tensorflow (just start with 'bash' command to see warning).
 # docker run -it --name morphoml -v "$(pwd)":/morphoml -p 8989:8989 wdobbels/morpho-ml
-FROM tensorflow/tensorflow:latest-gpu
+FROM tensorflow/tensorflow:2.2.0rc0-gpu-py3
 RUN apt-get update && apt-get install -y python3-pip && \
     curl -sL https://deb.nodesource.com/setup_13.x | bash - && \
     apt-get install -y nodejs
