@@ -8,8 +8,8 @@ FROM tensorflow/tensorflow:2.2.0rc0-gpu-py3
 RUN apt-get update && apt-get install -y python3-pip && \
     curl -sL https://deb.nodesource.com/setup_13.x | bash - && \
     apt-get install -y nodejs
-RUN pip3 install numpy scipy matplotlib pandas scikit-learn h5py \
-    jupyterlab ipywidgets && jupyter nbextension enable --py widgetsnbextension \
+RUN python3 -m pip install numpy scipy matplotlib pandas scikit-learn h5py \
+    jupyterlab ipywidgets wdplot && jupyter nbextension enable --py widgetsnbextension \
     && jupyter labextension install @jupyter-widgets/jupyterlab-manager
 EXPOSE 8989
 WORKDIR /morphoml
