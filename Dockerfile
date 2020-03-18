@@ -13,11 +13,11 @@ FROM tensorflow/tensorflow:2.1.0-gpu-py3
 RUN apt-get update && apt-get install -y python3-pip && \
     curl -sL https://deb.nodesource.com/setup_13.x | bash - && \
     apt-get install -y nodejs
+ENV JUPYTERLAB_DIR .jupyter-applications
 RUN python3 -m pip install numpy scipy matplotlib pandas scikit-learn h5py \
     tensorflow-addons jupyterlab ipywidgets wdplot \
     && jupyter nbextension enable --py widgetsnbextension \
     && jupyter labextension install @jupyter-widgets/jupyterlab-manager
 EXPOSE 8989
 WORKDIR /morphoml
-CMD jupyter-lab --no-browser --port=8989 --ip=0.0.0.0 --allow-root \
-        --app-dir=".jupyter-applications"
+CMD jupyter-lab --no-browser --port=8989 --ip=0.0.0.0 --allow-root
