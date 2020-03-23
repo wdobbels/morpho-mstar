@@ -1,5 +1,8 @@
-data/
+data/*
 .jupyter-applications/
+!performance/
+!split/
+*.bckup
 
 # Default python .gitignore
 # Byte-compiled / optimized / DLL files
