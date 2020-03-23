@@ -15,7 +15,7 @@ RUN apt-get update && apt-get install -y python3-pip && \
     apt-get install -y nodejs
 ENV JUPYTERLAB_DIR .jupyter-applications
 RUN python3 -m pip install numpy scipy matplotlib pandas scikit-learn h5py \
-    tensorflow-addons jupyterlab ipywidgets wdplot \
+    pillow tensorflow-addons jupyterlab ipywidgets wdplot \
     && jupyter nbextension enable --py widgetsnbextension \
     && jupyter labextension install @jupyter-widgets/jupyterlab-manager
 EXPOSE 8989

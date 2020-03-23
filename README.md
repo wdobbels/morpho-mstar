@@ -6,7 +6,7 @@ A workshop for predicting the total stellar mass of a galaxy, based on a single-
 
 ## Image format
 
-Use the log-scaled images (with automatic scaling value), and convert to jpg. A good pixel scale seems to be 128x128, for which the results are a few percentage better than for the 69x69 pixel sizes. It is possible to train first on 69x69 and then further tune (transfer learning) on 128x128.
+Use the log-scaled images (with automatic scaling value), and convert to png. A good pixel scale seems to be 128x128, for which the results are a few percentage better than for the 69x69 pixel sizes. It is possible to train first on 69x69 and then further tune (transfer learning) on 128x128.
 
 ## Additional metadata
 
