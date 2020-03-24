@@ -30,6 +30,8 @@ It might be possible to use something like a ResNet34, pretrained on imagenet. F
 
 # Results summary
 
+The RMES and $R^2$ are given for the test set.
+
 | npix | ntrain | add $D$ & $L_g$? | RMSE  | $R^2$ |
 | ---- | ------ | ------------ | ----- | ----- |
 | 69   | 10 000 | no           | 0.942 | 0.411 |
@@ -37,3 +39,5 @@ It might be possible to use something like a ResNet34, pretrained on imagenet. F
 | 128  | 30 000 | no           | 0.882 | 0.484 |
 | 69   | 10 000 | yes          | 0.853 | 0.517 |
 | 128  | 30 000 | yes          | 0.747 | 0.630 |
+
+When redoing the last run with png images (8-bit instead of 32-bit), I found RMSE = 0.727 and $R^2$ = 0.649. This is most likely just due to random fluctuations (due to different initializations). The model in the table was also pretrained on 69 pix images.
