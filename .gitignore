@@ -2,6 +2,8 @@ data/*
 .jupyter-applications/
 !performance/
 !split/
+!metadata/
+metadata_valid_morphid.tsv
 *.bckup
 
 # Default python .gitignore

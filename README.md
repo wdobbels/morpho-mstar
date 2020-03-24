@@ -2,42 +2,20 @@
 
 A workshop for predicting the total stellar mass of a galaxy, based on a single-band image.
 
-# Setup
+# Problem formulation
 
-## Image format
+Galaxies are gravitationally bound systems of stars, gas, and dust. They come in a large variety of sizes and shapes, but most of them can be roughly classified in two groups: spiral galaxies and elliptical galaxies. Ellipticals are featureless blobs, whereas spirals are disk galaxies with spiral arms and a central bulge. Here are three example galaxies from our dataset:
 
-Use the log-scaled images (with automatic scaling value), and convert to png. A good pixel scale seems to be 128x128, for which the results are a few percentage better than for the 69x69 pixel sizes. It is possible to train first on 69x69 and then further tune (transfer learning) on 128x128.
+![example galaxies](plots/example_galaxies.png)
 
-## Additional metadata
+To learn more about how galaxies form, we must be able to estimate galaxy properties. An important property is the stellar mass: the total mass of all stars in the galaxy. If there are more stars, both the stellar mass and the total (stellar) light will increase, so the interesting property is the mass-to-light ($M/L$). Typically, this property is estimated by using a series of observations at different wavelengths. If the galaxy is bluer (emits more at shorter wavelengths), it has more young stars, and this results in a lower $M/L$. 
 
-Including the distance and g-band luminosity (from SED fit, so no longer pure single band estimate) results in a very noticable improvement (RMSE from 0.88 to 0.75, R2 from 0.48 to 0.63).
+The main question we are interested in here is: **can we estimate the $M/L$ using a single observation, at one wavelength?** Our dataset has images of the g-band (around 475 nm: blue). It is a supervised regression problem. Supervised, since the dataset actually has more observations and thus an accurate ground truth $M/L$. Regression, since the $M/L$ is a continuous variable (typically between 0 and 4).
 
-It is possible to also include the galaxy zoo data. This allows one to pretrain on morphology, which is more directly related to the image. However, this makes the setup somewhat more complicated. A different loss function has to be set up, the output needs to be properly normalized (questions follow a tree structure, where the conditional probabilities are subject to constraints), and only a subset of the training data has GZ2 data. However, keras (and other ML libraries) make it quite easy to set up multi-input, multi-output models.
+The reason this single band $M/L$ estimate is possible, is because the image shows us the morphology of the galaxy. Most spiral galaxies have active star formation, and thus a lower $M/L$, whereas ellipticals are often called "red and dead": a high $M/L$. By constructing a machine learning model, we can estimate the $M/L$ from a single band observation.
 
-## Output
+# Data
 
-Use M/L as the prediction target. With the g-band luminosity available, it is possible to convert to stellar mass (just for fun).
+The galaxy metadata can be found in `data/metadata/metadata.tsv`. This contains the target $M/L$, as well as some other galaxy properties: the distance to the galaxy, the total g-band luminosity, and the size of the galaxy. The distance (and the galaxy size) require observing a spectrum of the galaxy: it is hence interesting to build a model both with and without distance (and galaxy size). The base model only makes use of the images.
 
-## Training set size
-
-10000 images seems ok. Without additional metadata, this leads to an RMSE of 0.91. By going to 30000 images, the RMSE decreases to 0.88. However, for more complicated architectures, a larger training set would be more beneficial.
-
-## Architecture
-
-The custom architecture (from the paper) has 5 convolutional layers, and 2 fully connected layers. This works well (without the need for morphology), and trains fast.
-
-It might be possible to use something like a ResNet34, pretrained on imagenet. First tune the top (fully connected) layers, then unfreeze the rest. However, this of course will train quite a bit slower. Imagenet is not that useful for this dataset, but it is better than nothing, and of course the architecture is proven to work well.
-
-# Results summary
-
-The RMES and $R^2$ are given for the test set.
-
-| npix | ntrain | add $D$ & $L_g$? | RMSE  | $R^2$ |
-| ---- | ------ | ------------ | ----- | ----- |
-| 69   | 10 000 | no           | 0.942 | 0.411 |
-| 128  | 10 000 | no           | 0.915 | 0.445 |
-| 128  | 30 000 | no           | 0.882 | 0.484 |
-| 69   | 10 000 | yes          | 0.853 | 0.517 |
-| 128  | 30 000 | yes          | 0.747 | 0.630 |
-
-When redoing the last run with png images (8-bit instead of 32-bit), I found RMSE = 0.727 and $R^2$ = 0.649. This is most likely just due to random fluctuations (due to different initializations). The model in the table was also pretrained on 69 pix images.
+The images have been preprocessed. Some foreground contamination (Milky Way stars) has been removed. The images have been log-scaled (this results in a more clear view of the fainter features), and are in png format (stored as 8-bit unsigned integers). They are all cropped around the center of the galaxy, and then resized (one dataset uses 69x69 pixels, the other 128x128).
