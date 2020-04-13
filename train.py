@@ -6,7 +6,7 @@ import numpy as np
 import pandas as pd
 from PIL import Image
 import tensorflow as tf
-import tensorflow_addons as tfa
+# import tensorflow_addons as tfa  # Not supported by default
 from tensorflow.keras import layers
 
 AUTOTUNE = tf.data.experimental.AUTOTUNE
@@ -19,9 +19,7 @@ def _parse_args():
     parser.add_argument('--model_dir', type=str, default=os.environ['SM_MODEL_DIR'])
     parser.add_argument('--imgs_dir', type=str, default=os.environ['SM_CHANNEL_IMGS'])
     parser.add_argument('--metadata', type=str, default=os.environ['SM_CHANNEL_META'])
-
-    parser.add_argument('--npix', type=int, default=128)
-
+    
     return parser.parse_known_args()
 
 def build_model(npix=128):
@@ -52,23 +50,36 @@ def get_data(imgs_dir, meta_filename):
     Both of the keys contain a tensorflow Dataset.
     [0]: images array, shape (Nset, Npix, Npix, 1)
     [1]: M/L array, shape (Nset,)
+    Also returns the number of pixels as an additional output.
     """
 
     d_data = {}
+    print('Reading metadata from', meta_filename)
+    meta_exists = os.path.exists(meta_filename)
+    print('Meta exists?', meta_exists)
+    print('Images folder', imgs_dir)
+    print('Contents of base image folder', os.listdir(imgs_dir))
     df_meta = pd.read_csv(meta_filename, sep='\t', index_col=0)
+    npix = None
     for dset in ['train', 'val']:
-        imgs, names = load_images(os.path.join(imgs_dir, 'train/'))
+        imgs, names = load_images_npy(imgs_dir, dset)
         y = df_meta.loc[names, 'M/L']
+        print(dset, 'images shape:', imgs.shape)
+        print(dset, 'y shape:', y.shape)
+        if npix is None:
+            npix = imgs.shape[1]
         d_data[dset] = tf.data.Dataset.from_tensor_slices((imgs, y))
-    return d_data
+    return d_data, npix
 
-def load_images(img_dir, rescale=True):
+def _load_images_dir(img_dir, rescale=True):
     """
     Load images (in png or jpg) from directory.
-    Returns images (shape ngalaxies, npix, npix), names (shape ngalaxies).
+    Returns images (shape ngalaxies, npix, npix, 1), names (shape ngalaxies).
     If rescale is True, the images are transformed to the range [-1, 1], 
     and the dtype is converted to np.float32. If False, the images are
     of dtype np.uint8, in the range [0, 255].
+    
+    Note: no longer used.
     """
 
     def valid_extension(filename): return filename[-3:] in ['jpg', 'png']
@@ -87,17 +98,26 @@ def load_images(img_dir, rescale=True):
         imgs[i, :, :] = img
         # example filename: 1237648722296897660.png
         names[i] = np.int64(filename.split('.')[0])
+    imgs = np.expand_dims(imgs, axis=-1)
+    return imgs, names
+
+def load_images_npy(img_dir, dset='train'):
+    img_filename = os.path.join(img_dir, dset + '_images.npy')
+    names_filename = os.path.join(img_dir, dset + '_names.npy')
+    imgs = np.load(img_filename)
+    if imgs.ndim == 3:  # (ngal, npix, npix)
+        imgs = np.expand_dims(imgs, axis=-1)
+    names = np.load(names_filename)
     return imgs, names
 
 def augment_data(data, batch_size=32):
     def convert(image, label): return convert_image(image), label
     def augment(image, label): return augment_image(image), label
     aug_data = {}
-    n_train = len(data['train'])
     # Train: augment
     aug_data['train'] = (data['train']
                             .cache()
-                            .shuffle(n_train // 4)
+                            .shuffle(10000)
                             .map(augment, num_parallel_calls=AUTOTUNE)
                             .batch(batch_size)
                             .prefetch(AUTOTUNE))
@@ -121,8 +141,8 @@ def augment_image(image):
     # Add padding (to translate later)
     image = tf.image.resize_with_crop_or_pad(image, npix + add_pix, npix + add_pix)
     # Rotate all images in batch with same, uniformly chosen angle
-    random_angles = tf.random.uniform(shape = (), minval=-np.pi, maxval=np.pi)
-    image = tfa.image.rotate(image, random_angles)
+#     random_angles = tf.random.uniform(shape = (), minval=-np.pi, maxval=np.pi)
+#     image = tfa.image.rotate(image, random_angles)
     # Crop back to needed format
     image = tf.image.random_crop(image, size=[npix, npix, 1]) # Random crop back
     image = image - 1
@@ -137,12 +157,15 @@ def fit_model(model, data, model_dir, nepochs=100):
     model.fit(data['train'], validation_data=data['val'],
               epochs=nepochs, callbacks=callbacks)
     # Save model (unique name by using seconds since Epoch time)
-    modelname = str(int(time.time()))
-    model.save(os.path.join(model_dir, modelname + '.h5'))
+    model_name = str(int(time.time()))
+    model_filename = os.path.join(model_dir, model_name + '.h5')
+    print('Saving model to', model_filename)
+    model.save(model_filename)
 
 if __name__ == '__main__':
     args, unknown = _parse_args()
-    model = build_model(args.npix)
-    data = get_data(args.imgs_dir, args.metadata)
+    data, npix = get_data(args.imgs_dir, os.path.join(args.metadata, 'metadata.tsv'))
     data = augment_data(data)
-    fit_model(model, data, args.model_dir)
+    model = build_model(npix=npix)
+    # args.model_dir points to S3 path, and will fail
+    fit_model(model, data, os.environ['SM_MODEL_DIR'])
