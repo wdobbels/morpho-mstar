@@ -18,4 +18,10 @@ The reason this single band _M/L_ estimate is possible, is because the image sho
 
 The galaxy metadata can be found in `data/metadata/metadata.tsv`. This contains the target _M/L_, as well as some other galaxy properties: the distance to the galaxy, the total g-band luminosity, and the size of the galaxy. The distance (and the galaxy size) require observing a spectrum of the galaxy: it is hence interesting to build a model both with and without distance (and galaxy size). The base model only makes use of the images.
 
-The images have been preprocessed. Some foreground contamination (Milky Way stars) has been removed. The images have been log-scaled (this results in a more clear view of the fainter features), and are in png format (stored as 8-bit unsigned integers). They are all cropped around the center of the galaxy, and then resized (one dataset uses 69x69 pixels, the other 128x128).
+The images have been preprocessed. Some foreground contamination (Milky Way stars) has been removed. The images have been log-scaled (this results in a more clear view of the fainter features). They are all cropped around the center of the galaxy, and then resized (one dataset uses 69x69 pixels, the other 128x128).
+
+At the time of writing, the images are stored as .npy files, which will be downloaded using the morphoml.imgload.load_npy function.
+
+# Getting started
+
+The code should work with any tensorflow 2 version, and further only requires numpy, pandas, and tensorflow_addons. To run the plotting, scipy and matplotlib are also required. To run the notebooks, either jupyter notebook or jupyter lab is required. The requirements.txt file can be used, but care has to be taken to have the right CUDA toolkit version for tensorflow (10.1 should work, but see this [tensorflow-addons chart](https://github.com/tensorflow/addons#python-op-compatibility-matrix)).
