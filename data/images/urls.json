@@ -1,0 +1,6 @@
+{
+    "69pix": {
+        "train10000": "https://sagemaker-morphoml-data.s3.amazonaws.com/69pix_npy_train10000.tar.gz",
+        "valtest": "https://sagemaker-morphoml-data.s3.amazonaws.com/69pix_npy_valtest.tar.gz"
+    } 
+}
