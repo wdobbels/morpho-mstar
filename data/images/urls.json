@@ -1,10 +1,13 @@
 {
     "69pix": {
         "train10000": "https://sagemaker-morphoml-data.s3.amazonaws.com/69pix_npy_train10000.tar.gz",
+        "train30000": "https://sagemaker-morphoml-data.s3.amazonaws.com/69pix_npy_train30000.tar.gz",
         "trainall": "https://sagemaker-morphoml-data.s3.amazonaws.com/69pix_npy_trainall.tar.gz",
         "valtest": "https://sagemaker-morphoml-data.s3.amazonaws.com/69pix_npy_valtest.tar.gz"
     },
     "128pix": {
+        "train10000": "https://sagemaker-morphoml-data.s3.amazonaws.com/128pix_npy_train10000.tar.gz",
+        "train30000": "https://sagemaker-morphoml-data.s3.amazonaws.com/128pix_npy_train30000.tar.gz",
         "trainall": "https://sagemaker-morphoml-data.s3.amazonaws.com/128pix_npy_trainall.tar.gz",
         "valtest": "https://sagemaker-morphoml-data.s3.amazonaws.com/128pix_npy_valtest.tar.gz"
     }
